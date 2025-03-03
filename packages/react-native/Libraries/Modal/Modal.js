@@ -20,6 +20,8 @@ import NativeModalManager from './NativeModalManager';
 import RCTModalHostView from './RCTModalHostViewNativeComponent';
 import VirtualizedLists from '@react-native/virtualized-lists';
 import React from 'react';
+import { findNodeHandle } from '../ReactNative/RendererProxy';
+import { AccessibilityInfo } from '../../types';
 
 const ScrollView = require('../Components/ScrollView/ScrollView').default;
 const View = require('../Components/View/View').default;
@@ -211,6 +213,7 @@ class Modal extends React.Component<ModalProps, State> {
       confirmProps(props);
     }
     this._identifier = uniqueModalIdentifier++;
+    this._lastFocusedElement = null;
     this.state = {
       isRendered: props.visible === true,
     };
@@ -242,6 +245,14 @@ class Modal extends React.Component<ModalProps, State> {
   }
 
   componentDidUpdate(prevProps: ModalProps) {
+    if (prevProps.visible === true && this.props.visible === false) {
+      const reactTag = findNodeHandle(this._lastFocusedElement);
+
+      if (reactTag) {
+        AccessibilityInfo.setAccessibilityFocus(reactTag);
+      }
+    }
+
     if (prevProps.visible === false && this.props.visible === true) {
       this.setState({isRendered: true});
     }
@@ -283,7 +294,20 @@ class Modal extends React.Component<ModalProps, State> {
     }
 
     const innerChildren = __DEV__ ? (
-      <AppContainer rootTag={this.context}>{this.props.children}</AppContainer>
+      <AppContainer rootTag={this.context}>
+      {React.Children.map(this.props.children, child => {
+        if (React.isValidElement(child)) {
+          return React.cloneElement(child, {
+            ref: (ref) => {
+              this._lastFocusedElement = ref;
+            },
+          });
+        }
+
+        return child;
+      })}
+
+      </AppContainer>
     ) : (
       this.props.children
     );

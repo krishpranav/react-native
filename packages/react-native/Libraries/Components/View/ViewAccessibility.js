@@ -405,3 +405,97 @@ export type AccessibilityProps = $ReadOnly<{
    */
   'aria-hidden'?: ?boolean,
 }>;
+
+export type AccessibilityFocusOrder = Array<React.ElementRef<typeof View>>;
+
+export type AccessibilityProps = $ReadOnly<{
+  ...AccessibilityPropsAndroid,
+  ...AccessibilityPropsIOS,
+  /**
+   * When `true`, indicates that the view is an accessibility element.
+   * By default, all the touchable elements are accessible.
+   *
+   * See https://reactnative.dev/docs/view#accessible
+   */
+  accessible?: ?boolean,
+
+  /**
+   * Overrides the text that's read by the screen reader when the user interacts
+   * with the element. By default, the label is constructed by traversing all
+   * the children and accumulating all the `Text` nodes separated by space.
+   *
+   * See https://reactnative.dev/docs/view#accessibilitylabel
+   */
+  accessibilityLabel?: ?Stringish,
+
+  /**
+   * An accessibility hint helps users understand what will happen when they perform
+   * an action on the accessibility element when that result is not obvious from the
+   * accessibility label.
+   *
+   * See https://reactnative.dev/docs/view#accessibilityHint
+   */
+  accessibilityHint?: ?Stringish,
+
+  /**
+   * Alias for accessibilityLabel  https://reactnative.dev/docs/view#accessibilitylabel
+   * https://github.com/facebook/react-native/issues/34424
+   */
+  'aria-label'?: ?Stringish,
+
+  /**
+   * Indicates to accessibility services to treat UI component like a specific role.
+   */
+  accessibilityRole?: ?AccessibilityRole,
+
+  /**
+   * Alias for accessibilityRole
+   */
+  role?: ?Role,
+
+  /**
+   * Indicates to accessibility services that UI Component is in a specific State.
+   */
+  accessibilityState?: ?AccessibilityState,
+  accessibilityValue?: ?AccessibilityValue,
+
+  /**
+   * An array of refs to specify the order in which components should be focused.
+   * This is useful for customizing the accessibility focus order.
+   */
+  accessibilityFocusOrder?: ?AccessibilityFocusOrder,
+
+  /**
+   * Provides an array of custom actions available for accessibility.
+   */
+  accessibilityActions?: ?$ReadOnlyArray<AccessibilityActionInfo>,
+
+  /**
+   * alias for accessibilityState
+   *
+   * see https://reactnative.dev/docs/accessibility#accessibilitystate
+   */
+  'aria-busy'?: ?boolean,
+  'aria-checked'?: ?boolean | 'mixed',
+  'aria-disabled'?: ?boolean,
+  'aria-expanded'?: ?boolean,
+  'aria-selected'?: ?boolean,
+  /** A value indicating whether the accessibility elements contained within
+   * this accessibility element are hidden.
+   *
+   * See https://reactnative.dev/docs/view#aria-hidden
+   */
+  'aria-hidden'?: ?boolean,
+}>;
+
+/**
+ * Helper function to set accessibility focus in a custom order.
+ */
+export const setAccessibilityFocusOrder = (refs: AccessibilityFocusOrder) => {
+  refs.forEach((ref) => {
+    const reactTag = findNodeHandle(ref);
+    if (reactTag) {
+      AccessibilityInfo.setAccessibilityFocus(reactTag);
+    }
+  });
+};
